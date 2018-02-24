@@ -41,8 +41,9 @@ model %>%
   layer_max_pooling_2d(pool_size = c(2, 2), strides=c(2,2)) %>% 
   layer_dropout(rate = 0.25) %>% 
   layer_flatten() %>% 
-  layer_dense(units=128,activation='relu',input_shape=c(784))%>%
-  layer_dense(units=64,activation='relu')%>%
+  layer_dense(units=1024,activation='relu')%>%
+  layer_dense(units=512,activation='relu')%>%
+  layer_dense(units=256,activation='relu')%>%
   layer_dropout(rate = 0.5) %>%
   layer_dense(units=10,activation='softmax')
 
@@ -55,7 +56,7 @@ model%>%compile(
 history<-model %>%  fit(
   train.feature,
   train.label,
-  epochs=1,
+  epochs=30,
   batch_size=5,
   validation_split=.1
 )

@@ -3,7 +3,7 @@ library(keras)
 library(tensorflow)
 library(tidyverse)
 
-setwd("C:/Users/oouyang/Dropbox/Analysis/Database/Digit Recognizer")
+#setwd("C:/Users/oouyang/Dropbox/Analysis/Database/Digit Recognizer")
 
 train<-data.matrix(read_csv("train.csv"))
 test<-data.matrix(read_csv("test.csv"))

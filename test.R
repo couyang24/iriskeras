@@ -56,8 +56,8 @@ model%>%compile(
 history<-model %>%  fit(
   train.feature,
   train.label,
-  epochs=30,
-  batch_size=5,
+  epochs=1,
+  batch_size=500,
   validation_split=.1
 )
 

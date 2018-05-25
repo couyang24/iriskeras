@@ -32,7 +32,10 @@ hcboxplot(iris$Petal.Length, iris$Species, color = 'firebrick') %>%
 plot_ly(iris, x=~Petal.Length, y=~Petal.Width, size = ~Sepal.Length,
        type="scatter",mode="markers", color = ~Species, text=~Species)
 
+graph <- list()
+i=1
+graph[[i]] <- iris %>%
+  GGally::ggpairs(aes(colour = Species, alpha = .4)) %>%
+  ggplotly()
 
-
-
-
+graph[[1]]

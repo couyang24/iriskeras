@@ -1,0 +1,181 @@
+---
+title: "3D Interactive Iris via Plot_ly"
+author: "Owen Ouyang"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    number_sections: false
+    code_folding: hide
+    toc: true
+    toc_depth: 6
+    fig_width: 10
+    highlight: tango
+    theme: cosmo
+    smart: true
+editor_options: 
+  chunk_output_type: console
+---
+# Introduction
+
+
+<img src="https://i.imgur.com/FJ6ARjc.jpg">
+
+
+First of all, I want to give credit to **Pranav Pandya**, one of the best kernel writers on Kaggle. I learned lots of stuff from his kernel and now I am just applying what I learned to this dataset. 
+
+I will try my best to make this kernel as easy to understand as possible. If you have any question, please leave me a comment and if you like the kernel, please give me a upvote~ Thank you so much and enjoy the show!
+
+
+# Load Packages & Dataset
+
+p_load from pacman package would help you to install any package (available) if it has not been installed yet.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(knitr, tidyverse, data.table, DT, caret, viridis, plotly, DescTools, GGally, corrplot, skimr, corrgram)
+```
+
+# Explorational Data Analysis
+
+## Data Table
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+iris %>% 
+  datatable(filter = 'top', options = list(
+  pageLength = 15, autoWidth = TRUE
+))
+```
+
+
+## skim
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+iris %>% skim()
+```
+
+
+## Corrplot
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+iris %>% select(-Species) %>% cor() %>% corrplot.mixed(upper = "ellipse")
+```
+
+
+## Corrgram
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+iris %>% corrgram(lower.panel=panel.shade, upper.panel=panel.ellipse)
+```
+
+
+## GGPAIRS
+
+We have four different variables, Petal Length, Petal Width, Sepal Length, and Sepal Width; however, the 3D plot can only apply three variables. To choose the best variables, let's have a look at all the variables. 
+
+Sepal Width has the least variance and then I am going to use the other three variables.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+iris %>% ggpairs(aes(color=Species, alpha=.4))
+```
+
+## Each Variable Distribution{.tabset .tabset-fade .tabset-pills}
+
+
+From the graphs below, we need to identify which variable can help us separate the species.
+
+
+### Sepal Length
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+PlotFdist(iris$Sepal.Length, "Distribution of Sepal Length co-ord position")
+```
+
+### Petal Length
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+PlotFdist(iris$Petal.Length, "Distribution of Petal Length co-ord position")
+```
+
+### Sepal Width
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+PlotFdist(iris$Sepal.Width, "Distribution of Sepal Width co-ord position")
+```
+
+### Petal Width
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+PlotFdist(iris$Petal.Width, "Distribution of Petal Width co-ord position")
+```
+
+## 3D Interactive Plot
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+iris %>% 
+  mutate(Species = as.factor(Species)) %>%
+  plot_ly(x=~Petal.Length,y=~Petal.Width,z= ~Sepal.Length, color=~Species, hoverinfo = 'text', colors = viridis(3),
+          text = ~paste('Species:', Species,
+                        '<br>Sepal.Length:', Sepal.Length,
+                        '<br>Sepal.Width:', Sepal.Width,
+                        '<br>Petal.Length:', Petal.Length, 
+                        '<br>Petal.Width:', Petal.Width)) %>% 
+  add_markers(opacity = 0.8) %>%
+  layout(title = "3D Iris",
+         annotations=list(yref='paper',xref="paper",y=1.05,x=1.1, text="Species",showarrow=F),
+         scene = list(xaxis = list(title = 'Petal Length(cm)'),
+                      yaxis = list(title = 'Petal Width(cm)'),
+                      zaxis = list(title = 'Sepal Length(cm)')))
+```
+
+# Preprocss
+
+```{r message=FALSE, warning=FALSE}
+iris$Species <- iris$Species %>% as.factor() %>% as.numeric() - 1
+```
+
+# Modeling
+
+## Cross Validation
+```{r message=FALSE, warning=FALSE}
+inTrain <- createDataPartition(iris$Species, p=.7, list = F)
+
+train <- iris[inTrain,]
+test <- iris[-inTrain,]
+
+# data_train <- lgb.Dataset(data = data.matrix(train[, 1:4]), label = train[, 5])
+```
+
+## LightGBM
+```{r message=FALSE, warning=FALSE}
+# params <- list(objective = "multiclass", metric = "auc", num_class = 3)
+# model <- lgb.train(params,
+#                    data_train,
+#                    100,
+#                    min_data = 1,
+#                    learning_rate = .1)
+
+# result <- predict(model, data.matrix(test[, 1:4]))
+
+# list <- list()
+# 
+# for (i in 1:nrow(test)){
+#     max = max(result[(i-1)*3+1], result[(i-1)*3+2], result[(i-1)*3+3])
+#     list[i] <- if_else(max == result[(i-1)*3+3], 3, if_else(max == result[(i-1)*3+2], 2, 1))
+# }
+# 
+# pred <- list %>% as.numeric() - 1
+```
+
+## LightGBM in Importance Plot
+```{r message=FALSE, warning=FALSE}
+# lgb.importance(model, percentage = TRUE) %>% kable()
+# 
+# tree_imp <- lgb.importance(model, percentage = TRUE)
+# 
+# lgb.plot.importance(tree_imp, measure = "Gain")
+```
+
+## LightGBM in Confusion Matrix
+```{r message=FALSE, warning=FALSE}
+
+# pred_table <- table(pred, test$Species)
+# 
+# confusionMatrix(pred_table)
+```
+
+Hope you enjoyed the kernel and don't forget to upvote~ Thanks a lot!
